@@ -5,14 +5,35 @@ const admin = require("./routes/admin")
 const mongoose = require('mongoose')
 const path = require('path')
 const app = express()
+const session = require('express-session')
+const flash = require("connect-flash")
 
 // Configurações:
+    //SESSION
+        app.use(session({
+            secret: "cursodenode",
+            resave:true,
+            saveUninitialized:true
+        }))
+        app.use(flash())
+        
+    //MIDDLEWARE
+        app.use((req,res,next) => {
+            res.locals.success_msg = req.flash("Success_msg")
+            res.locals.error_msg = req.flash("Error_msg")
+            next()
+        })    
+
     // BODYPARSER
         app.use(bodyParser.urlencoded({extended: true}))
         app.use(bodyParser.json())
+
+
     //HANDLEBARS
         app.engine('handlebars',handlebars.engine({defaultLayout: 'main'}))
         app.set('view engine','handlebars')
+
+
     //MONGOOSE
         mongoose.Promise = global.Promise;
         mongoose.connect('mongodb://127.0.0.1/blogapp').then(() => {
@@ -20,9 +41,11 @@ const app = express()
         }).catch((err) => {
             console.log("Erro ao se conectar ao servidor "+err)
         })
+
+
     //PUBLIC
         app.use(express.static(path.join(__dirname,"public")))
-
+       
 
     //ROTAS
 
